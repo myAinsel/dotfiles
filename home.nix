@@ -21,50 +21,50 @@
   # environment.
   nixpkgs.config.allowUnfree = true;
   home.packages = [
-    # # Adds the 'hello' command to your environment. It prints a friendly
-    # # "Hello, world!" when run.
-    # pkgs.hello
-
-    # # It is sometimes useful to fine-tune packages, for example, by applying
-    # # overrides. You can do that directly here, just don't forget the
-    # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-    # # fonts?
-    # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
-
-    # # You can also create simple shell scripts directly inside your
-    # # configuration. For example, this adds a command 'my-hello' to your
-    # # environment:
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
+    # Core Utilities
     pkgs.nautilus
-    pkgs.calibre
-    pkgs.remmina
-    pkgs.veracrypt
-    pkgs.lutris
+    pkgs.loupe
     pkgs.vlc
     pkgs.ptyxis
+    pkgs.libreoffice
+    pkgs.mission-center
+    
+    # Media
+    pkgs.calibre
+    pkgs.kdenlive
+    pkgs.audacity
+    
+    # Work Tools
+    pkgs.android-studio
+    pkgs.qtcreator
+    pkgs.remmina
     pkgs.obsidian
-    pkgs.bitwarden
-    pkgs.zotero
+    pkgs.burpsuite
     pkgs.standardnotes
+    pkgs.veracrypt
+    pkgs.zotero
+
+    # Communication
     pkgs.discord
     pkgs.gnome.polari
-    pkgs.cheese
     pkgs.protonmail-desktop
-    pkgs.kdenlive
-    pkgs.mission-center
+    
+    # Other
     pkgs.yubioath-flutter
-    pkgs.burpsuite
+    pkgs.wineWowPackages.stable
+    pkgs.bottles
+    pkgs.bitwarden
     pkgs.dwarf-fortress
-    pkgs.hyprpaper # I don't know why this is needed as well, but it is
+    pkgs.pika-backup
+    pkgs.bibata-cursors
+
     # Gnome Extensions
-    # pkgs.gnomeExtensions.blur-my-shell
-    # pkgs.gnomeExtensions.gsconnect
-    # pkgs.gnomeExtensions.appindicator
-    # pkgs.gnomeExtensions.logo-menu
-    # pkgs.gnomeExtensions.dash-to-dock
-    # pkgs.gnomeExtensions.tailscale-qs
+    pkgs.gnomeExtensions.blur-my-shell
+    pkgs.gnomeExtensions.gsconnect
+    pkgs.gnomeExtensions.appindicator
+    pkgs.gnomeExtensions.logo-menu
+    pkgs.gnomeExtensions.dash-to-dock
+    pkgs.gnomeExtensions.tailscale-qs
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
@@ -110,14 +110,21 @@
     settings = {
       "$mod" = "SUPER";
       "$terminal" = "kitty";
-      "$fileManager" = "nautilus";
+      "$fileManager" = "$terminal ranger";
       "$menu" = "wofi --show drun";
+      "$ws1" = "1: term";
+      "$ws2" = "2: code";
+      "$ws3" = "3: write";
+      "$ws4" = "4: browse";
+      "$ws5" = "5: work";
+      "$ws6" = "6. watch";
       monitor = [ 
-        "DP-1,preferred,0x0,1"
-        "eDP-1,preferred,1920x1080,1"
+        "DP-2,preferred,0x0,1"
+        "eDP-1,preferred,auto-right,1"
       ];
       exec-once = [
         "hyprpaper"
+        "hypridle"
         "pipewire"
         "wireplumber"
         "pipewire-pulse"
@@ -125,8 +132,10 @@
         "mako"
       ];
       env = [
-        "XCURSOR_SIZE,24"
-        "HYPRCURSOR_SIZE,24"
+        "XCURSOR_THEME, Bibata-Modern-Classic"
+        "XCURSOR_SIZE,20"
+        "HYPRCURSOR_THEME,Bibata-Modern-Classic"
+        "HYPRCURSOR_SIZE,20"
         "NIXOS_OZONE_WL,1"
       ];
       general = {
@@ -155,29 +164,51 @@
         "$mod, Return, exec, $terminal"
         "$mod, D, exec, $menu"
         "$mod, E, exec, $fileManager"
-        "$mod, Q, killactive," 
-        "$mod SHIFT, Q, exit"
+        "$mod SHIFT, Q, killactive," 
+        "$mod ALT SHIFT, Q, exit"
+        "$mod SHIFT, L, exec, hyprlock"
         "$mod, V, togglefloating"
         "$mod, h, movefocus, l"
         "$mod, j, movefocus, d"
         "$mod, k, movefocus, u"
         "$mod, l, movefocus, r"
-      ]
-      ++ (
+
+        "$mod, 1, workspace, name:$ws1"
+        "$mod, 2, workspace, name:$ws2"
+        "$mod, 3, workspace, name:$ws3"
+        "$mod, 4, workspace, name:$ws4"
+        "$mod, 5, workspace, name:$ws5"
+        "$mod, 6, workspace, name:$ws6"
+        "$mod, 7, workspace, 7"
+        "$mod, 8, workspace, 8"
+        "$mod, 9, workspace, 9"
+        "$mod SHIFT, 1, movetoworkspace, name:$ws1"
+        "$mod SHIFT, 2, movetoworkspace, name:$ws2"
+        "$mod SHIFT, 3, movetoworkspace, name:$ws3"
+        "$mod SHIFT, 4, movetoworkspace, name:$ws4"
+        "$mod SHIFT, 5, movetoworkspace, name:$ws5"
+        "$mod SHIFT, 6, movetoworkspace, name:$ws6"
+        "$mod SHIFT, 7, movetoworkspace, 7"
+        "$mod SHIFT, 8, movetoworkspace, 8"
+        "$mod SHIFT, 9, movetoworkspace, 9"
+        
+      ];
+
+      # ++ (
         # binds $mod + [shift +] {1..10} to [move to] workspace {1..10}
-        builtins.concatLists (builtins.genList (
-            x: let
-              ws = let
-                c = (x + 1) / 10;
-              in
-                builtins.toString (x + 1 - (c * 10));
-            in [
-              "$mod, ${ws}, workspace, ${toString (x + 1)}"
-              "$mod SHIFT, ${ws}, movetoworkspace, ${toString (x + 1)}"
-            ]
-          )
-          10)
-      );
+      #   builtins.concatLists (builtins.genList (
+      #       x: let
+      #         ws = let
+      #           c = (x + 1) / 10;
+      #         in
+      #           builtins.toString (x + 1 - (c * 10));
+      #       in [
+      #         "$mod, ${ws}, workspace, ${toString (x + 1)}"
+      #         "$mod SHIFT, ${ws}, movetoworkspace, ${toString (x + 1)}"
+      #       ]
+      #     )
+      #     10)
+      # );
       bindm = [ 
         "$mod, mouse:272, movewindow"
         "$mod, mouse:273, resizewindow"
@@ -211,13 +242,125 @@
     };
     gpg = {
       enable = true;
-      mutableKeys = true; # Possibly change this
+      #mutableKeys = true; # Possibly change this
     };
     hyprlock = {
       enable = true;
+      settings = {
+        background = [
+          {
+            monitor="";
+            path = "/home/morgan/dotfiles/Wallpapers/celestepeak.png";
+            blur_passes = 2;
+            blur_size = 5;
+            brightness = 0.75;
+          }
+        ];
+        label = [
+          { 
+            monitor = "";
+            text = "$TIME";
+            text_align = "center";
+            color = "rgba(210,210,210,0.95)";
+            font_size = 48;
+            font_family = "Ubuntu";
+            position = "640, 360";
+            # halign = "center";
+  #         # valign = "center";
+          }
+        ];
+      };
     };
     waybar = {
       enable = true;
+      settings = {
+        mainBar = {
+        height = 25;
+        spacing = 8;
+        modules-left = ["hyprland/workspaces"];
+        modules-center = ["privacy"];
+        modules-right = ["pulseaudio" "network" "battery" "tray" "clock"];
+        "hyprland/workspaces" = {
+          format = "{icon}";
+          format-icons = {
+            "1: term" = "";
+            "2: code" = "󰅩";
+            "3: write" = "󰼭";
+            "4: browse" = "󰖟";
+            "5: work" = "󰦑";
+            "6: watch" = "";
+            "urgent" = "󰈅";
+            "focused" = "";
+            "default" = "";
+          };
+        };
+        "pulseaudio" = {
+           "format-icons" = {
+           "format" = "{icon} {volume}%";
+             "headphones"= "";
+             "default" = ["" ""];
+ 
+           };
+        };
+        "network" = {
+          "format-disconnected" = "󰌙";
+          "format-ethernet" = "󰈀";
+          "format-wifi" = " {signalStrength}";
+          "tooltip-format-wifi" = "{essid}";
+        };
+        "battery" = {
+          "format" = "{icon}";
+          "states" = {
+           "warning" = 20;
+           "critical" = 10;
+          };
+          "tooltip-format" = "{capacity}%" ;
+          "format-icons"= ["" "" "" "" ""];
+        };
+ 
+       };
+      };
+      style = ''
+        * {
+          border: none;
+          border-radius: 0;
+          font-family: Ubuntu Nerd Font;
+          font-size: 14px;
+          min-height: 0;
+        }
+        window#waybar {
+         background: transparent;
+         color: white; 
+         border-bottom: 2px solid gray;
+        }
+        #window {
+          font-weight: bold;
+          font-family: "Ubuntu";
+        }
+        #workspaces button {
+          padding: 0 5px;
+          background: transparent;
+          color: white;
+          border-top: 2px solid transparent;
+        }
+        #workspaces button.focused {
+            color: #c9545d;
+            border-top: 2px solid #c9545d;
+        }
+        
+        #clock, #battery, #cpu, #memory, #network, #pulseaudio, #custom-spotify, #tray, #mode {
+          padding: 0 3px;
+          margin: 0 2px;
+        }
+        #battery {
+        }
+        #clock {
+        }
+        #pulseaudio {
+        }
+        #network {
+        }
+      '';
     };
     wofi = {
       enable = true;
@@ -232,8 +375,8 @@
       #  platformio.platformio-ide
        tailscale.vscode-tailscale
       # ftsamoyed.theme-pink-cat-boo
-       catppuccin.catppuccin-vsc-icons
-       catppuccin.catppuccin-vsc
+      catppuccin.catppuccin-vsc-icons
+      catppuccin.catppuccin-vsc
       #  #ms-vscode-remote.vscode-remote-extensionpack
        ms-vscode-remote.remote-ssh
        ms-vscode-remote.remote-containers
@@ -329,24 +472,47 @@
         flavor = "frappe";
       };
     };
+    ranger = {
+      enable = true;
+    };
+    atuin = {
+      enable = true;
+      enableZshIntegration = true;
+    };
+    gh = {
+      enable = true;
+    };
   };
   services = {
-    hyprpaper = {
-      enable = true;
-      settings = { 
-        preload = "/home/morgan/Pictures/Wallpapers/celestepeak.png";
-        wallpaper = ",/home/morgan/Pictures/Wallpapers/celestepeak.png";
-      };
-    };
-    mako = {
-      enable = true;
-      anchor = "top-right";
-    };
-    #hypridle = {
-    #  enable = true;
-    #};
+   hyprpaper = {
+     enable = true;
+     settings = { 
+       preload = "/home/morgan/Pictures/Wallpapers/celestepeak.png";
+       wallpaper = ",/home/morgan/Pictures/Wallpapers/celestepeak.png";
+     };
+   };
+   mako = {
+     enable = true;
+     anchor = "top-right";
+   };
+   hypridle = {
+     enable = true;
+     settings = {
+       general = {
+         lock_cmd = "pidof hyprlock || hyprlock";       # avoid starting multiple hyprlock instances.
+         before_sleep_cmd = "hyprlock";   # lock before suspend.
+         after_sleep_cmd = "hyprctl dispatch dpms on";  # to avoid having to press a key twice to turn on the display.
+       };
+       listener = [
+         {
+           timeout = 120;
+           on-timeout = "systemctl suspend";
+         }
+       ];
+     };
+   };
   };
-  #systemd = {
+  #  systemd = {
   #    user.services.polkit-gnome-authentication-agent-1 = {
   #      description = "polkit-gnome-authentication-agent-1";
   #      wantedBy = ["graphical-session.target"];
@@ -379,25 +545,34 @@
       };
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
+    gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
   };
   dconf = {
     enable = true;
     settings = {
       "org/gnome/desktop/interface" = { 
+        cursor-theme = "Bibata-Modern-Classic";
         color-scheme = "prefer-dark";
       };
-      # "org/gnome/shell" = {
-      #   disable-user-extensions = false;
-      #   enabled-extensions = with pkgs.gnomeExtensions; [
-      #     blur-my-shell.extensionUuid
-      #     gsconnect.extensionUuid
-      #     appindicator.extensionUuid
-      #     logo-menu.extensionUuid
-      #     dash-to-dock.extensionUuid
-      #     tailscale-qs.extensionUuid
-      #   ];
-      #  };
-      #
+      "org/gnome/shell" = {
+        disable-user-extensions = false;
+        enabled-extensions = with pkgs.gnomeExtensions; [
+          blur-my-shell.extensionUuid
+          gsconnect.extensionUuid
+          appindicator.extensionUuid
+          logo-menu.extensionUuid
+          dash-to-dock.extensionUuid
+          tailscale-qs.extensionUuid
+        ];
+       };
     };
   };
+  #xdg.portal = {
+  #  enable = true;
+  #  extraPortals = [ pkgs.xdg-desktop-portal-gtk ]; 
+  #  #configPackages = [
+    #  pkgs.xdg-desktop-portal-hyprland
+    #  pkgs.xdg-desktop-portal-gtk
+    #];
+  #};
 }
